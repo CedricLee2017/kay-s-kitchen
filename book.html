@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 
 <head>
     <meta charset="utf-8">
@@ -23,6 +23,10 @@
     <link href="lib/lightbox/css/lightbox.min.css" rel="stylesheet">
     <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 
+    <!-- Third-party UI Libraries (Flatpickr & SweetAlert2) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 
@@ -34,7 +38,7 @@
 
     <!-- Spinner Start -->
     <div id="spinner"
-        class="show w-100 vh-100 bg-white position-fixed translate-middle top-50 start-50  d-flex align-items-center justify-content-center">
+        class="show w-100 vh-100 bg-white position-fixed translate-middle top-50 start-50 d-flex align-items-center justify-content-center">
         <div class="spinner-grow text-primary" role="status"></div>
     </div>
     <!-- Spinner End -->
@@ -200,7 +204,8 @@
                                         placeholder="Contact No." required>
                                 </div>
                                 <div class="col-lg-4 col-md-6">
-                                    <input id="bookEventDate" type="date" class="form-control border-0" required>
+                                    <input id="bookEventDate" type="text" class="form-control border-0 bg-white"
+                                        placeholder="Select Event Date" required readonly>
                                 </div>
                                 <div class="col-lg-4 col-md-6">
                                     <input id="bookEmail" type="email" class="form-control border-0"
@@ -335,11 +340,119 @@
     <script src="lib/lightbox/js/lightbox.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
 
+    <!-- Third-party JS Libraries (Flatpickr & SweetAlert2) -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh-tw.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
 
-    <!-- Custom Auth and Booking Javascript -->
+    <!-- Custom Auth Javascript -->
     <script src="js/auth.js"></script>
+
+    <!-- Booking Inline Handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. 初始化 Flatpickr 進階日期選擇器
+            flatpickr("#bookEventDate", {
+                locale: "zh_tw",
+                dateFormat: "Y-m-d",
+                minDate: "today", // 禁止選擇過去的日期
+                disable: [
+                    function (date) {
+                        // 範例：每週一公休不可選擇 (0 為週日, 1 為週一)
+                        return (date.getDay() === 1);
+                    }
+                ]
+            });
+
+            // 2. 自動填入已登入會員的 Email
+            const userJson = localStorage.getItem('user');
+            if (userJson) {
+                try {
+                    const user = JSON.parse(userJson);
+                    if (user.email) {
+                        document.getElementById('bookEmail').value = user.email;
+                    }
+                } catch (e) {
+                    console.error('解析使用者資料失敗', e);
+                }
+            }
+
+            // 3. 處理預約表單提交
+            const bookingForm = document.getElementById('bookingForm');
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '請先登入',
+                            text: '請先登入會員再進行線上席位預約！',
+                            confirmButtonColor: '#D4A762'
+                        }).then(() => {
+                            window.location.href = 'login.html';
+                        });
+                        return;
+                    }
+
+                    const bookingData = {
+                        country: document.getElementById('bookCountry').value,
+                        city: document.getElementById('bookCity').value,
+                        palace: document.getElementById('bookPalce').value,
+                        event_type: document.getElementById('bookEventType').value,
+                        no_of_palace: document.getElementById('bookNoOfPalce').value,
+                        phone: document.getElementById('bookContactNum').value,
+                        booking_date: document.getElementById('bookEventDate').value,
+                        email: document.getElementById('bookEmail').value
+                    };
+
+                    Swal.showLoading();
+
+                    try {
+                        const res = await fetch('/api/booking', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(bookingData)
+                        });
+
+                        const data = await res.json();
+
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '預約成功！',
+                                text: data.message || '我們將會盡快與您聯繫進行細節確認。',
+                                confirmButtonColor: '#D4A762'
+                            }).then(() => {
+                                window.location.href = 'index.html';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '預約失敗',
+                                text: data.message || '伺服器處理失敗，請稍後再試。',
+                                confirmButtonColor: '#d33'
+                            });
+                        }
+                    } catch (err) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: '連線失敗',
+                            text: '網路或伺服器連線異常，請稍後再試。',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
