@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="utf-8">
+    <title>CaterServ - 會員登入</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- Google 官方登入 SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+
+<body class="bg-light">
+
+    <!-- Navbar Start -->
+    <div class="container-fluid nav-bar bg-white border-bottom">
+        <div class="container">
+            <nav class="navbar navbar-light navbar-expand-lg py-3">
+                <a href="index.html" class="navbar-brand">
+                    <h1 class="text-primary fw-bold mb-0">Cater<span class="text-dark">Serv</span></h1>
+                </a>
+            </nav>
+        </div>
+    </div>
+    <!-- Navbar End -->
+
+    <!-- Login Form Start -->
+    <div class="container py-5">
+        <div class="row justify-content-center py-4">
+            <div class="col-md-6 col-lg-5">
+                <div class="card border-0 shadow-lg rounded-3">
+                    <div class="card-body p-4 p-sm-5 text-center">
+                        <h3 class="fw-bold mb-4 text-dark">會員登入</h3>
+
+                        <form id="loginForm" class="mb-4 text-start">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">電子郵件</label>
+                                <input type="email" class="form-control" id="email" placeholder="name@example.com"
+                                    required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">密碼</label>
+                                <input type="password" class="form-control" id="password" placeholder="請輸入密碼" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">登入</button>
+                        </form>
+
+                        <div class="d-flex align-items-center my-3">
+                            <hr class="flex-grow-1">
+                            <span class="px-2 text-muted small">或使用第三方帳號</span>
+                            <hr class="flex-grow-1">
+                        </div>
+
+                        <!-- Google 登入按鈕容器 -->
+                        <div class="d-flex justify-content-center my-3">
+                            <div id="g_id_onload"
+                                data-client_id="139778228024-abcdho4g36eo3p7ip97g0d1lqcoan6cq.apps.googleusercontent.com"
+                                data-callback="handleCredentialResponse" data-auto_prompt="false">
+                            </div>
+                            <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline"
+                                data-text="signin_with" data-size="large" data-logo_alignment="left">
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="index.html" class="text-decoration-none text-muted small">← 返回首頁</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Login Form End -->
+
+    <!-- JavaScript 前端處理 -->
+    <script>
+        async function handleCredentialResponse(response) {
+            try {
+                const res = await fetch('/api/auth/google', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ credential: response.credential })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    alert('Google 登入成功！歡迎回來 ' + data.user.name);
+                    window.location.href = 'index.html';
+                } else {
+                    alert('登入失敗：' + data.message);
+                }
+            } catch (err) {
+                console.error('連線錯誤：', err);
+                alert('伺服器連線失敗，請確認 Node.js 服務正常執行。');
+            }
+        }
+    </script>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+/* 日式極簡抹茶風格範例 (Japanese Minimalist Style) */
+:root {
+    --primary-color: #4a6b5d;
+    /* 抹茶綠 */
+    --primary-hover: #3a5448;
+    --secondary-color: #2c3e50;
+    --accent-color: #d9822b;
+
+    --bg-light: #f4f3ef;
+    /* 暖米色背景 */
+    --bg-dark: #1c2321;
+    --bg-card: #ffffff;
+
+    --text-primary: #2d312e;
+    --text-muted: #737b77;
+    --text-light: #ffffff;
+
+    --border-color: #e2e0d8;
+    --border-radius-sm: 2px;
+    /* 更硬朗直角風格 */
+    --border-radius-lg: 6px;
+    --box-shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.03);
+    --box-shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.06);
+
+    --font-main: "Noto Serif TC", "Times New Roman", serif;
+}
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--text-light) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.bg-light {
+    background-color: var(--bg-light) !important;
+}
+
+.card {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    box-shadow: var(--box-shadow-sm);
+}
+
+body {
+    font-family: var(--font-main);
+    color: var(--text-primary);
+}
